@@ -35,6 +35,8 @@ class HLL:
         raw_estimate = self.alpham * (m ** 2) * hmean
         print(hmean)
         print(raw_estimate)
+        # print(f'{[i for i in self.longest if i != 0]}')
+        # print(f'{[i for i in bcount if i != 0]}')
         # small value correction (linear counting)
         if raw_estimate < 5 / 2 * m:
             count = 0
@@ -42,12 +44,14 @@ class HLL:
                 if bucket == 0:
                     count += 1
             print(count)
+            print('using linear counting')
             raw_estimate = m * math.log(m / count)
+            
 
         return round(raw_estimate)
 
     def count_leading_zeroes(self, i):
-        count = 0
+        count = 1
         mask = 1 << 63  # Start with a mask that has a 1 at the 64th bit
         while mask and not (i & mask):
             count += 1

@@ -1,2 +1,3 @@
 TODO:
-Fix HyperLogLog (it is a mess and bad and wrong)
+Fix implementation of hyperLogLog (it is a mess and bad and wrong)
+Based on: https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
