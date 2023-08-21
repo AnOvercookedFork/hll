@@ -29,12 +29,12 @@ class HLL:
         acc = 0
         for l in self.longest:
             acc += 2 ** (-1 * l)
-        print(acc)
+        # print(acc)
         hmean =  m / acc
 
-        raw_estimate = self.alpham * (m ** 2) * hmean
-        print(hmean)
-        print(raw_estimate)
+        raw_estimate = self.alpham * m * hmean
+        # print(hmean)
+        # print(raw_estimate)
         # print(f'{[i for i in self.longest if i != 0]}')
         # print(f'{[i for i in bcount if i != 0]}')
         # small value correction (linear counting)
@@ -74,8 +74,8 @@ def set_count(data):
 def main():
     t = time.time()
     print('Generating dataset...')
-    # data = generate_int_dataset(10 ** 7, 0, 2 ** 32 - 1)
-    data = [i for i in range(0, 1000)]
+    data = generate_int_dataset(10 ** 7, 0, 2 ** 32 - 1)
+    # data = [i for i in range(0, 1000)]
     print(f'Finished in {time.time() - t} seconds')
 
     t = time.time()
@@ -84,7 +84,7 @@ def main():
     print(f'Set contains {count1} unique elements')
     print(f'Counting completed in {time.time() - t}')
 
-    hll = HLL(16)
+    hll = HLL(4)
     t = time.time()
     print('Counting using HLL...')
     count = hll.hll(data)
