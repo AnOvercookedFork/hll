@@ -1,4 +1,61 @@
-import random, time
+import random, time, math, hashlib
+
+class HLL:
+    def __init__(self, b):
+        self.b = b
+        self.longest = [0] * (2 ** self.b)
+        if b == 4:
+            self.alpham = 0.673
+        elif b == 5:
+            self.alpham = 0.697
+        elif b == 6:
+            self.alpham = 0.709
+        else:
+            self.alpham = 0.7213/ (1 + 1.079 / (2 ** b))
+
+
+    def hll(self, data):
+        bcount = [0] * (2 ** self.b)
+        for d in data:
+            h = int(hashlib.md5(str(d).encode()).hexdigest(), 16)
+            bucket = h >> (128 - self.b)
+            bcount[bucket] += 1
+            h = h << self.b
+            lz = self.count_leading_zeroes(h)
+            if lz > self.longest[bucket]:
+                self.longest[bucket] = lz
+        m = 2 ** self.b
+
+        acc = 0
+        for l in self.longest:
+            acc += 2 ** (-1 * l)
+        print(acc)
+        hmean =  m / acc
+
+        raw_estimate = self.alpham * (m ** 2) * hmean
+        print(hmean)
+        print(raw_estimate)
+        # small value correction (linear counting)
+        if raw_estimate < 5 / 2 * m:
+            count = 0
+            for bucket in self.longest:
+                if bucket == 0:
+                    count += 1
+            print(count)
+            raw_estimate = m * math.log(m / count)
+
+        return round(raw_estimate)
+
+    def count_leading_zeroes(self, i):
+        count = 0
+        mask = 1 << 63  # Start with a mask that has a 1 at the 64th bit
+        while mask and not (i & mask):
+            count += 1
+            mask >>= 1
+            if count > 128 - self.b:
+                return 128 - self.b
+        return count
+    
 
 def generate_int_dataset(size, min, max):
     l = []
@@ -7,21 +64,30 @@ def generate_int_dataset(size, min, max):
     return l
 
 def set_count(data):
-    return len(set(data))
-
-def hll(data, b):
-    raise NotImplementedError
+    s = set(data)
+    return (len(set(data)), s)
 
 def main():
-    t1 = time.time()
+    t = time.time()
     print('Generating dataset...')
-    data = generate_int_dataset(10 ** 7, 0, 2 ** 32 - 1)
-    print(f'Finished in {time.time() - t1} seconds')
+    # data = generate_int_dataset(10 ** 7, 0, 2 ** 32 - 1)
+    data = [i for i in range(0, 1000)]
+    print(f'Finished in {time.time() - t} seconds')
 
-    t2 = time.time()
+    t = time.time()
     print('Counting using set...')
-    print(f'Set contains {set_count(data)} unique elements')
-    print(f'Counting completed in {time.time() - t2}')
+    count1, s = set_count(data)
+    print(f'Set contains {count1} unique elements')
+    print(f'Counting completed in {time.time() - t}')
+
+    hll = HLL(16)
+    t = time.time()
+    print('Counting using HLL...')
+    count = hll.hll(data)
+    print(f'Set contains approximately {count} unique elements')
+    print(f'HLL counting completed in {time.time() - t}')
+
+    print()
 
 if __name__ == '__main__':
     main()
