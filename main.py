@@ -14,7 +14,7 @@ class HLL:
             self.alpham = 0.7213/ (1 + 1.079 / (2 ** b))
 
 
-    def hll(self, data):
+    def ingest(self, data):
         bcount = [0] * (2 ** self.b)
         for d in data:
             h = int(hashlib.md5(str(d).encode()).hexdigest(), 16)
@@ -24,8 +24,10 @@ class HLL:
             lz = self.count_leading_zeroes(h)
             if lz > self.longest[bucket]:
                 self.longest[bucket] = lz
-        m = 2 ** self.b
+        return self.estimate()
 
+    def estimate(self):
+        m = 2 ** self.b
         acc = 0
         for l in self.longest:
             acc += 2 ** (-1 * l)
@@ -60,6 +62,13 @@ class HLL:
                 return 128 - self.b
         return count
     
+    def merge(self, hll):
+        if self.b != hll.b:
+            raise ValueError('target hll does not have same b as this hll')
+        else:
+            for i in range(0, len(self.longest)):
+                self.longest[i] = max(self.longest[i], hll.longest[i])
+    
 
 def generate_int_dataset(size, min, max):
     l = []
@@ -87,7 +96,8 @@ def main():
     hll = HLL(4)
     t = time.time()
     print('Counting using HLL...')
-    count = hll.hll(data)
+    hll.ingest(data)
+    count = hll.estimate()
     print(f'Set contains approximately {count} unique elements')
     print(f'HLL counting completed in {time.time() - t}')
 
